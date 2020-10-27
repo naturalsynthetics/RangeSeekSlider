@@ -257,7 +257,7 @@ import UIKit
         element.accessibilityHint = minLabelAccessibilityHint
         element.accessibilityValue = minLabel.string as? String
         element.accessibilityFrame = convert(leftHandle.frame, to: nil)
-        element.accessibilityTraits = UIAccessibilityTraits.adjustable
+        element.accessibilityTraits = UIAccessibilityTraitAdjustable
         return element
     }
 
@@ -268,7 +268,7 @@ import UIKit
         element.accessibilityHint = maxLabelAccessibilityHint
         element.accessibilityValue = maxLabel.string as? String
         element.accessibilityFrame = convert(rightHandle.frame, to: nil)
-        element.accessibilityTraits = UIAccessibilityTraits.adjustable
+        element.accessibilityTraits = UIAccessibilityTraitAdjustable
         return element
     }
 
@@ -286,9 +286,19 @@ import UIKit
             updateLabelPositions()
         }
     }
+    
+    open override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        if gestureRecognizer.isKind(of: UIPanGestureRecognizer.self) {
+            let gesture = gestureRecognizer as! UIPanGestureRecognizer
+            let velocity = gesture.velocity(in: self)
+            return abs(velocity.y)>abs(velocity.x)
+        } else {
+            return true
+        }
+    }
 
     open override var intrinsicContentSize: CGSize {
-        return CGSize(width: UIView.noIntrinsicMetric, height: 65.0)
+        return CGSize(width: UIViewNoIntrinsicMetric, height: 65.0)
     }
 
 
@@ -296,7 +306,7 @@ import UIKit
 
     open override func beginTracking(_ touch: UITouch, with event: UIEvent?) -> Bool {
         let touchLocation: CGPoint = touch.location(in: self)
-        let insetExpansion: CGFloat = -30.0
+        let insetExpansion: CGFloat = -120.0
         let isTouchingLeftHandle: Bool = leftHandle.frame.insetBy(dx: insetExpansion, dy: insetExpansion).contains(touchLocation)
         let isTouchingRightHandle: Bool = rightHandle.frame.insetBy(dx: insetExpansion, dy: insetExpansion).contains(touchLocation)
 
@@ -415,13 +425,13 @@ import UIKit
         let labelFrame: CGRect = CGRect(x: 0.0, y: 50.0, width: 75.0, height: 14.0)
 
         minLabelFont = UIFont.systemFont(ofSize: labelFontSize)
-        minLabel.alignmentMode = CATextLayerAlignmentMode.center
+        minLabel.alignmentMode = kCAAlignmentCenter
         minLabel.frame = labelFrame
         minLabel.contentsScale = UIScreen.main.scale
         layer.addSublayer(minLabel)
 
         maxLabelFont = UIFont.systemFont(ofSize: labelFontSize)
-        maxLabel.alignmentMode = CATextLayerAlignmentMode.center
+        maxLabel.alignmentMode = kCAAlignmentCenter
         maxLabel.frame = labelFrame
         maxLabel.contentsScale = UIScreen.main.scale
         layer.addSublayer(maxLabel)
@@ -691,7 +701,7 @@ import UIKit
 
         CATransaction.begin()
         CATransaction.setAnimationDuration(0.3)
-        CATransaction.setAnimationTimingFunction(CAMediaTimingFunction(name: CAMediaTimingFunctionName.easeInEaseOut))
+        CATransaction.setAnimationTimingFunction(CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseInEaseOut))
         handle.transform = transform
 
         // the label above the handle will need to move too if the handle changes size
