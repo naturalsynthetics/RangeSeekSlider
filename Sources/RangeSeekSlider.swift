@@ -287,16 +287,6 @@ import UIKit
         }
     }
     
-    open override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
-        if gestureRecognizer.isKind(of: UIPanGestureRecognizer.self) {
-            let gesture = gestureRecognizer as! UIPanGestureRecognizer
-            let velocity = gesture.velocity(in: self)
-            return abs(velocity.y)>abs(velocity.x)
-        } else {
-            return true
-        }
-    }
-
     open override var intrinsicContentSize: CGSize {
         return CGSize(width: UIViewNoIntrinsicMetric, height: 65.0)
     }
