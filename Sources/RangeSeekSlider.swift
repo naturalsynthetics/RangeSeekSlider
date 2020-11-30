@@ -10,6 +10,8 @@ import UIKit
 
 @IBDesignable open class RangeSeekSlider: UIControl {
 
+    static let useGesture = true
+    
     // MARK: - initializers
 
     public required init?(coder aDecoder: NSCoder) {
@@ -295,7 +297,16 @@ import UIKit
     // MARK: - UIControl
 
     open override func beginTracking(_ touch: UITouch, with event: UIEvent?) -> Bool {
-        let touchLocation: CGPoint = touch.location(in: self)
+
+        if Self.useGesture {
+            return super.beginTracking(touch, with: event)
+        }
+        
+        return handleBeginTracking(location: touch.location(in: self))
+    }
+    
+    func handleBeginTracking(location: CGPoint) -> Bool {
+        let touchLocation: CGPoint = location
         let insetExpansion: CGFloat = -120.0
         let isTouchingLeftHandle: Bool = leftHandle.frame.insetBy(dx: insetExpansion, dy: insetExpansion).contains(touchLocation)
         let isTouchingRightHandle: Bool = rightHandle.frame.insetBy(dx: insetExpansion, dy: insetExpansion).contains(touchLocation)
@@ -323,9 +334,14 @@ import UIKit
     }
 
     open override func continueTracking(_ touch: UITouch, with event: UIEvent?) -> Bool {
-        guard handleTracking != .none else { return false }
+        if Self.useGesture {
+            return continueTracking(touch, with: event)
+        }
+        return handleContinueTracking(location: touch.location(in: self))
+    }
 
-        let location: CGPoint = touch.location(in: self)
+    func handleContinueTracking(location: CGPoint) -> Bool {
+        guard handleTracking != .none else { return false }
 
         // find out the percentage along the line we are in x coordinate terms (subtracting half the frames width to account for moving the middle of the handle, not the left hand side)
         let percentage: CGFloat = (location.x - sliderLine.frame.minX - handleDiameter / 2.0) / (sliderLine.frame.maxX - sliderLine.frame.minX)
@@ -352,8 +368,16 @@ import UIKit
 
         return true
     }
-
+    
     open override func endTracking(_ touch: UITouch?, with event: UIEvent?) {
+        if Self.useGesture {
+            return super.endTracking(touch, with: event)
+        }
+        
+        handleEndTracking()
+    }
+    
+    func handleEndTracking(){
         let handle: CALayer = (handleTracking == .left) ? leftHandle : rightHandle
         animate(handle: handle, selected: false)
         handleTracking = .none
@@ -429,8 +453,28 @@ import UIKit
         setupStyle()
 
         refresh()
+        
+        addGestureRecognizer(UIPanGestureRecognizer.init(target: self, action: #selector(handlePan(gesture:))))
     }
 
+    @objc func handlePan(gesture: UIPanGestureRecognizer){
+        
+        if gesture.state == .began {
+            handleBeginTracking(location: gesture.location(in: self))
+            return
+        }
+        
+        if gesture.state == .changed {
+            handleContinueTracking(location: gesture.location(in: self))
+            return
+        }
+        
+        if gesture.state == .ended || gesture.state == .failed || gesture.state == .cancelled {
+            handleEndTracking()
+            return
+        }
+    }
+    
     private func percentageAlongLine(for value: CGFloat) -> CGFloat {
         // stops divide by zero errors where maxMinDif would be zero. If the min and max are the same the percentage has no point.
         guard minValue < maxValue else { return 0.0 }
