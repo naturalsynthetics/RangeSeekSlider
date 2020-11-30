@@ -299,6 +299,7 @@ import UIKit
     open override func beginTracking(_ touch: UITouch, with event: UIEvent?) -> Bool {
 
         if Self.useGesture {
+
             return super.beginTracking(touch, with: event)
         }
         
@@ -335,7 +336,7 @@ import UIKit
 
     open override func continueTracking(_ touch: UITouch, with event: UIEvent?) -> Bool {
         if Self.useGesture {
-            return continueTracking(touch, with: event)
+            return super.continueTracking(touch, with: event)
         }
         return handleContinueTracking(location: touch.location(in: self))
     }
@@ -371,9 +372,9 @@ import UIKit
     
     open override func endTracking(_ touch: UITouch?, with event: UIEvent?) {
         if Self.useGesture {
+            
             return super.endTracking(touch, with: event)
         }
-        
         handleEndTracking()
     }
     
